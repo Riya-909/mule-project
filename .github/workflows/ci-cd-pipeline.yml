@@ -3,45 +3,52 @@ name: MuleSoft CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - main    # Trigger on push to the main branch
   pull_request:
     branches:
-      - main
+      - main    # Trigger on pull requests to the main branch
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest    # Use the latest Ubuntu runner for the build
 
     steps:
-      # Step 1: Checkout code
+      # Step 1: Checkout the code
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3    # Action to check out your repository code
 
-      # Step 2: Set up Java (MuleSoft is Java-based)
+      # Step 2: Set up Java 11 (using Adoptium's Temurin distribution)
       - name: Set up Java 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v3    # Setup Java using the latest version of the action
         with:
-          java-version: '11'
-          distribution: 'adoptopenjdk'
+          java-version: '11'          # Specify Java version (Java 11)
+          distribution: 'temurin'     # Set the correct distribution for Java (temurin for Adoptium)
 
       # Step 3: Install Maven (to build the MuleSoft project)
       - name: Set up Maven
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v3    # Maven is managed along with Java in the same action
         with:
-          java-version: '11'
-          maven-version: '3.8.1'
+          java-version: '11'          # Specify Java version (Java 11)
+          maven-version: '3.8.1'      # Specify the Maven version to use (adjust if necessary)
 
       # Step 4: Cache Maven dependencies to speed up the build
       - name: Cache Maven dependencies
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}   # Cache key based on the pom.xml file
           restore-keys: |
             ${{ runner.os }}-maven-
 
       # Step 5: Build the MuleSoft project using Maven
       - name: Build with Maven
-        run: mvn clean install -DskipTests
+        run: mvn clean install -DskipTests    # Builds the project, skipping tests (remove '-DskipTests' if you want to run tests)
 
-  # Optionally: You can add a deployment step here when you’re ready
+  # Optionally: Add a deployment step here when you’re ready (example)
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+  #     - name: Deploy to MuleSoft Server
+  #       run: ./deploy.sh   # Replace with actual deployment command
