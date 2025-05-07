@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest    # Use the latest Ubuntu runner for the build
+    runs-on: windows-latest    # Use the latest Windows runner for the build
 
     steps:
       # Step 1: Checkout the code
@@ -24,18 +24,15 @@ jobs:
           java-version: '11'          # Specify Java version (Java 11)
           distribution: 'temurin'     # Set the correct distribution for Java (temurin for Adoptium)
 
-      # Step 3: Install Maven (to build the MuleSoft project)
-      - name: Set up Maven
-        uses: actions/setup-java@v3    # Maven is managed along with Java in the same action
-        with:
-          java-version: '11'          # Specify Java version (Java 11)
-          maven-version: '3.8.1'      # Specify the Maven version to use (adjust if necessary)
+      # Step 3: Install Maven on Windows using Chocolatey
+      - name: Install Maven
+        run: choco install maven -y   # Use Chocolatey to install Maven on Windows
 
       # Step 4: Cache Maven dependencies to speed up the build
       - name: Cache Maven dependencies
         uses: actions/cache@v3
         with:
-          path: ~/.m2/repository
+          path: C:\Users\runneradmin\.m2\repository    # Path for Maven's local repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}   # Cache key based on the pom.xml file
           restore-keys: |
             ${{ runner.os }}-maven-
@@ -46,7 +43,7 @@ jobs:
 
   # Optionally: Add a deployment step here when you’re ready (example)
   # deploy:
-  #   runs-on: ubuntu-latest
+  #   runs-on: windows-latest
   #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v3
