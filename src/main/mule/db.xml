@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="11a8ef91-7595-411e-9479-a513b2cdf791" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="61f5b797-2c6c-489f-a5b7-65dfbc06a16b" >
+		<db:my-sql-connection host="127.0.0.1" port="3306" user="riygarg" password="welcome!2345" database="muledb"/>
+	</db:config>
+	<flow name="dbFlow" doc:id="328f4d2b-4506-49ec-adad-aa375dc26b58" >
+		<http:listener doc:name="Listener" doc:id="5d8ff294-f901-43b6-bb6d-ad8c4593ee7b" config-ref="HTTP_Listener_config" path="/companies"/>
+		<db:select doc:name="Select" doc:id="ca0a0b05-af0d-4464-8987-59044a852a14" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from customers]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="90553232-aa08-4682-867a-c3a31591113a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="dbFlow1" doc:id="779b22ce-f87b-46de-a357-552cd023eee2" >
+		<http:listener doc:name="Listener" doc:id="730eb271-355d-4939-8b58-ebcd07fc7798" config-ref="HTTP_Listener_config" path="/companies/{id}"/>
+		<db:select doc:name="Select" doc:id="76ea5379-118b-4268-a267-3745ba2c0af8" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM customers where customerid =:id;
+]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+   id: attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="39e80584-68b9-4e7f-8c6c-4c6824bc8f5f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="dbFlow2" doc:id="e73b7150-0b17-4028-a0b2-201675a9b2f1" >
+		<http:listener doc:name="Listener" doc:id="0f5c8222-583d-4e85-a855-f0af950c0eae" config-ref="HTTP_Listener_config" path="/companies/{customerid}" allowedMethods="DELETE"/>
+		<db:delete doc:name="Delete" doc:id="394dc281-f524-4d78-8d1c-eeb9d3fb16e4" config-ref="Database_Config">
+			<db:sql ><![CDATA[Delete from customers where customerid = :customerid;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	customerid:attributes.uriParams.customerid
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="90775984-e7c4-4781-9699-49f7dda12cae" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="5a367282-eb98-4456-8e9a-99c80567d297" message="delete operation is performed successfully"/>
+	</flow>
+	<flow name="dbFlow3" doc:id="17279a16-2910-4c35-9a7d-f2a975fb3734" >
+		<http:listener doc:name="Listener" doc:id="194b62c4-3a29-4b6e-ad0f-02a32532a870" config-ref="HTTP_Listener_config" path="/test" allowedMethods="PATCH"/>
+		<db:update doc:name="Update" doc:id="d301e42d-0628-48e7-a1af-2d5755242263" config-ref="Database_Config">
+			<db:sql ><![CDATA[Update customers set firstname= :firstname where customerid= :customerid;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+   customerid: payload.customerid,
+   firstname: payload.firstname
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="22b0982e-b87d-4cec-bd5f-18edc0e20798" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
