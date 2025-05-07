@@ -41,4 +41,4 @@ jobs:
       - name: Build with Maven
         run: mvn clean install -DskipTests
 
-  # Optionally: Add a deployment step here when you’re ready
+  # Optionally: Add a deployment step here when you’re ready.
